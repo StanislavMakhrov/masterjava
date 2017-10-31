@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
  */
 public class MatrixUtil {
 
-    // TODO implement parallel multiplication matrixA*matrixB
+    // parallel multiplication matrixA*matrixB
     public static int[][] concurrentMultiply(int[][] matrixA, int[][] matrixB, ExecutorService executor) throws InterruptedException, ExecutionException {
         final int matrixSize = matrixA.length;
         final int[][] matrixC = new int[matrixSize][matrixSize];
@@ -21,11 +21,7 @@ public class MatrixUtil {
 
         for (int j = 0; j < matrixSize; j++) {
             final int col = j;
-            final int[] columnB = new int[matrixSize];
-            for (int k = 0; k < matrixSize; k++) {
-                columnB[k] = matrixB[k][col];
-            }
-            completionService.submit(() -> columnMyltiply(col, matrixA, columnB, matrixSize));
+            completionService.submit(() -> columnMultiply(col, matrixA, matrixB, matrixSize));
         }
 
         for (int i = 0; i < matrixSize; i++) {
@@ -48,8 +44,13 @@ public class MatrixUtil {
         }
     }
 
-    private static ColumnMultipleResult columnMyltiply(int col, int[][] matrixA, int[] columnB, int matrixSize)
+    private static ColumnMultipleResult columnMultiply(int col, int[][] matrixA, int[][]matrixB, int matrixSize)
     {
+        final int[] columnB = new int[matrixSize];
+        for (int k = 0; k < matrixSize; k++) {
+            columnB[k] = matrixB[k][col];
+        }
+
         final int[] columnC = new int[matrixSize];
 
         for (int row = 0; row < matrixSize; row++) {
@@ -70,11 +71,7 @@ public class MatrixUtil {
 
         for (int j = 0; j < matrixSize; j++) {
             final int col = j;
-            final int[] columnB = new int[matrixSize];
-            for (int k = 0; k < matrixSize; k++) {
-                columnB[k] = matrixB[k][col];
-            }
-            ColumnMultipleResult res = columnMyltiply(col, matrixA, columnB, matrixSize);
+            ColumnMultipleResult res = columnMultiply(col, matrixA, matrixB, matrixSize);
             for (int row = 0; row < matrixSize; row++)
             {
                 matrixC[row][res.col] = res.columnC[row];
