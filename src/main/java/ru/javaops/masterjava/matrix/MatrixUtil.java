@@ -24,10 +24,10 @@ public class MatrixUtil {
             completionService.submit(() -> columnMultiply(col, matrixA, matrixB, matrixSize));
         }
 
-        for (int i = 0; i < matrixSize; i++) {
+        for (int col = 0; col < matrixSize; col++) {
             ColumnMultipleResult res = completionService.take().get();
-            for (int k = 0; k < matrixSize; k++) {
-                matrixC[k][res.col] = res.columnC[k];
+            for (int row = 0; row < matrixSize; row++) {
+                matrixC[row][res.col] = res.columnC[row];
             }
         }
 
