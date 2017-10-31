@@ -1,7 +1,9 @@
 package ru.javaops.masterjava.matrix;
 
 import java.util.Random;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -15,23 +17,70 @@ public class MatrixUtil {
         final int matrixSize = matrixA.length;
         final int[][] matrixC = new int[matrixSize][matrixSize];
 
+        final CompletionService<ColumnMultipleResult> completionService = new ExecutorCompletionService<>(executor);
+
+        for (int j = 0; j < matrixSize; j++) {
+            final int col = j;
+            final int[] columnB = new int[matrixSize];
+            for (int k = 0; k < matrixSize; k++) {
+                columnB[k] = matrixB[k][col];
+            }
+            completionService.submit(() -> columnMyltiply(col, matrixA, columnB, matrixSize));
+        }
+
+        for (int i = 0; i < matrixSize; i++) {
+            ColumnMultipleResult res = completionService.take().get();
+            for (int k = 0; k < matrixSize; k++) {
+                matrixC[k][res.col] = res.columnC[k];
+            }
+        }
+
         return matrixC;
     }
 
-    // TODO optimize by https://habrahabr.ru/post/114797/
+    public static class ColumnMultipleResult {
+        private final int col;
+        private final int[] columnC;
+
+        private ColumnMultipleResult(int col, int[] columnC) {
+            this.col = col;
+            this.columnC = columnC;
+        }
+    }
+
+    private static ColumnMultipleResult columnMyltiply(int col, int[][] matrixA, int[] columnB, int matrixSize)
+    {
+        final int[] columnC = new int[matrixSize];
+
+        for (int row = 0; row < matrixSize; row++) {
+            final int[] rowA = matrixA[row];
+            int sum = 0;
+            for (int k = 0; k < matrixSize; k++) {
+                sum += rowA[k] * columnB[k];
+            }
+            columnC[row] = sum;
+        }
+        return new ColumnMultipleResult(col, columnC);
+    }
+
+    // optimized by https://habrahabr.ru/post/114797/
     public static int[][] singleThreadMultiply(int[][] matrixA, int[][] matrixB) {
         final int matrixSize = matrixA.length;
         final int[][] matrixC = new int[matrixSize][matrixSize];
 
-        for (int i = 0; i < matrixSize; i++) {
-            for (int j = 0; j < matrixSize; j++) {
-                int sum = 0;
-                for (int k = 0; k < matrixSize; k++) {
-                    sum += matrixA[i][k] * matrixB[k][j];
-                }
-                matrixC[i][j] = sum;
+        for (int j = 0; j < matrixSize; j++) {
+            final int col = j;
+            final int[] columnB = new int[matrixSize];
+            for (int k = 0; k < matrixSize; k++) {
+                columnB[k] = matrixB[k][col];
+            }
+            ColumnMultipleResult res = columnMyltiply(col, matrixA, columnB, matrixSize);
+            for (int row = 0; row < matrixSize; row++)
+            {
+                matrixC[row][res.col] = res.columnC[row];
             }
         }
+
         return matrixC;
     }
 
