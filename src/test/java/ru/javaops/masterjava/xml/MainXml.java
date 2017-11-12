@@ -20,12 +20,10 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.google.common.base.Strings.nullToEmpty;
 import static j2html.TagCreator.*;
 
 public class MainXml {
@@ -78,16 +76,13 @@ public class MainXml {
             // Users loop
             while (processor.doUntil(XMLEvent.START_ELEMENT, "User")) {
                 String groupRefs = processor.getAttribute("groupRefs");
-                if (groupRefs.isEmpty()) continue;
-                for (String ref : Splitter.on(' ').split(groupRefs)) {
-                    if (groupNames.contains(ref)) {
-                        User user = new User();
-                        user.setEmail((processor.getAttribute("email")));
-                        user.setValue(processor.getReader().getElementText());
-                        users.add(user);
-                        break;
-                    }
+                if (!Collections.disjoint(groupNames, Splitter.on(' ').splitToList(nullToEmpty(groupRefs)))) {
+                    User user = new User();
+                    user.setEmail((processor.getAttribute("email")));
+                    user.setValue(processor.getReader().getElementText());
+                    users.add(user);
                 }
+
             }
             return users;
         }
