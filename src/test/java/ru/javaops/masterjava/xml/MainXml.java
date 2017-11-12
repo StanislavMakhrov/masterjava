@@ -1,5 +1,6 @@
 package ru.javaops.masterjava.xml;
 
+import com.google.common.base.Splitter;
 import com.google.common.io.Resources;
 import j2html.tags.ContainerTag;
 import one.util.streamex.StreamEx;
@@ -9,7 +10,9 @@ import ru.javaops.masterjava.xml.schema.Project;
 import ru.javaops.masterjava.xml.schema.User;
 import ru.javaops.masterjava.xml.util.JaxbParser;
 import ru.javaops.masterjava.xml.util.Schemas;
+import ru.javaops.masterjava.xml.util.StaxStreamProcessor;
 
+import javax.xml.stream.events.XMLEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
@@ -27,6 +30,9 @@ import static j2html.TagCreator.*;
 
 public class MainXml {
     public static final Comparator<User> USER_COMPARATOR = Comparator.comparing(User::getValue).thenComparing(User::getEmail);
+    public static final String PROJECT = "Project";
+    public static final String USERS = "Users";
+    public static final String GROUP = "Group";
 
     public static void main(String[] args) throws Exception {
         if (args.length != 2) {
@@ -37,12 +43,57 @@ public class MainXml {
         MainXml main = new MainXml();
         String projectName = args[0];
 
-        Set<User> users = main.parceByJaxb(projectName, payloadUrl);
+        Set<User> users = main.parseByJaxb(projectName, payloadUrl);
         String out = toHtml(users, projectName, Paths.get("out/usersJaxb.html"));
         System.out.println(out);
+
+        users = main.parseByStax(projectName, payloadUrl);
+        users.forEach(u -> System.out.println("Name: '" + u.getValue() + "', email: " + u.getEmail()));
     }
 
-    private Set<User> parceByJaxb(String projectName, URL payloadUrl) throws Exception {
+    private Set<User> parseByStax(String projectName, URL payloadUrl) throws Exception {
+        try (InputStream is = payloadUrl.openStream()) {
+            StaxStreamProcessor processor = new StaxStreamProcessor(is);
+            Set<String> groupNames = new HashSet<>();
+            Set<User> users = new TreeSet<>(USER_COMPARATOR);
+            String element;
+
+            projects:
+            // Projects loop
+            while ((processor.doUntil(XMLEvent.START_ELEMENT, PROJECT))) {
+                if (projectName.equals(processor.getAttribute("name")))
+                {
+                    // Groups loop
+                    while ((element = processor.doUntilAny(XMLEvent.START_ELEMENT, PROJECT, GROUP, USERS)) != null) {
+                        if (!element.equals(GROUP)) {
+                            break projects;
+                        }
+                        groupNames.add(processor.getAttribute("name"));
+                    }
+                }
+            }
+            if (groupNames.isEmpty()) {
+                throw new IllegalArgumentException("Invalid " + projectName + " or no groups");
+            }
+            // Users loop
+            while (processor.doUntil(XMLEvent.START_ELEMENT, "User")) {
+                String groupRefs = processor.getAttribute("groupRefs");
+                if (groupRefs.isEmpty()) continue;
+                for (String ref : Splitter.on(' ').split(groupRefs)) {
+                    if (groupNames.contains(ref)) {
+                        User user = new User();
+                        user.setEmail((processor.getAttribute("email")));
+                        user.setValue(processor.getReader().getElementText());
+                        users.add(user);
+                        break;
+                    }
+                }
+            }
+            return users;
+        }
+    }
+
+    private Set<User> parseByJaxb(String projectName, URL payloadUrl) throws Exception {
         JaxbParser parser = new JaxbParser(ObjectFactory.class);
         parser.setSchema(Schemas.ofClasspath("payload.xsd"));
         try (InputStream is = payloadUrl.openStream()) {
