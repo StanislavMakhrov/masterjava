@@ -34,7 +34,7 @@ public class UserDaoTest extends AbstractDaoTest<UserDao> {
     }
 
     @Test
-    public void insertBatch() {
+    public void insertBatch() throws Exception {
         dao.clean();
         dao.insertBatch(FIST5_USERS, 3);
         Assert.assertEquals(5, dao.getWithLimit(100).size());
