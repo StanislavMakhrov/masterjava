@@ -13,8 +13,7 @@ public class User extends BaseEntity {
     @Column("full_name")
     private @NonNull String fullName;
     private @NonNull String email;
-    private @NonNull
-    UserFlag flag;
+    private @NonNull UserFlag flag;
     @Column("city_ref")
     private @NonNull String cityRef;
 
