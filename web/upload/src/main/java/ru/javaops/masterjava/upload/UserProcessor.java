@@ -6,7 +6,7 @@ import lombok.val;
 import ru.javaops.masterjava.persist.DBIProvider;
 import ru.javaops.masterjava.persist.dao.UserDao;
 import ru.javaops.masterjava.persist.model.User;
-import ru.javaops.masterjava.persist.model.UserFlag;
+import ru.javaops.masterjava.persist.model.type.UserFlag;
 import ru.javaops.masterjava.xml.schema.ObjectFactory;
 import ru.javaops.masterjava.xml.util.JaxbParser;
 import ru.javaops.masterjava.xml.util.StaxStreamProcessor;
