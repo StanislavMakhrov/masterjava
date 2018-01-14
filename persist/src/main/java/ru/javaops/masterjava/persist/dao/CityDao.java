@@ -8,6 +8,9 @@ import ru.javaops.masterjava.persist.model.City;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+
+import static java.util.function.Function.identity;
 
 @RegisterMapperFactory(EntityMapperFactory.class)
 public abstract class CityDao implements AbstractDao {
@@ -19,12 +22,11 @@ public abstract class CityDao implements AbstractDao {
     public abstract List<City> getAll();
 
     public Map<String, City> getAsMap() {
-        return StreamEx.of(getAll()).toMap(City::getName, g -> g);
+        return StreamEx.of(getAll()).toMap(City::getRef, identity());
     }
 
     @SqlUpdate("INSERT INTO city (ref, name)  VALUES (:ref, :name)")
-    @GetGeneratedKeys
-    public abstract int insert(@BindBean City city);
+    public abstract void insert(@BindBean City city);
 
     @SqlBatch("INSERT INTO city (ref, name)  VALUES (:ref, :name)")
     public abstract void insertBatch(@BindBean List<City> cities);

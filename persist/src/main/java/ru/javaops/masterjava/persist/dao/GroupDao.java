@@ -2,6 +2,8 @@ package ru.javaops.masterjava.persist.dao;
 
 import com.bertoncelj.jdbi.entitymapper.EntityMapperFactory;
 import one.util.streamex.StreamEx;
+import org.skife.jdbi.v2.sqlobject.BindBean;
+import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapperFactory;
@@ -19,7 +21,16 @@ public abstract class GroupDao implements AbstractDao {
     @SqlQuery("SELECT * FROM groups ORDER by name")
     public abstract List<Group> getAll();
 
-    public Map<String, City> getAsMap() {
-        return StreamEx.of(getAll()).toMap(City::getName, g -> g);
+    public Map<String, Group> getAsMap() {
+        return StreamEx.of(getAll()).toMap(Group::getName, g -> g);
+    }
+
+    @SqlUpdate("INSERT INTO group (name, type, project_id)  VALUES (:name, CAST(:type AS group_type), :projectId)")
+    @GetGeneratedKeys
+    public abstract int insertGeneratedId(@BindBean Group groups);
+
+    public void insert(Group groups) {
+        int id = insertGeneratedId(groups);
+        groups.setId(id);
     }
 }
