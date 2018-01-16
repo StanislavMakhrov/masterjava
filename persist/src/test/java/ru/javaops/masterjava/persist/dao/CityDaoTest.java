@@ -5,11 +5,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import ru.javaops.masterjava.persist.CityTestData;
 import ru.javaops.masterjava.persist.model.City;
 
 import java.util.Map;
 
-import static ru.javaops.masterjava.persist.dao.CityTestData.CITIES;
+import static ru.javaops.masterjava.persist.CityTestData.*;
 
 public class CityDaoTest extends AbstractDaoTest<CityDao> {
 
@@ -19,7 +20,7 @@ public class CityDaoTest extends AbstractDaoTest<CityDao> {
 
     @BeforeClass
     public static void init() throws Exception {
-        CityDaoTest.init();
+        CityTestData.init();
     }
 
     @Before
@@ -39,7 +40,13 @@ public class CityDaoTest extends AbstractDaoTest<CityDao> {
         City ekb = new City("ekb", "Екатеринбург");
         dao.insert(ekb);
         final Map<String, City> cities = dao.getAsMap();
-        Assert.assertEquals(ImmutableMap.of(CITIES.values(), ekb), cities);
+        Map<String, City> COMPARE = ImmutableMap.of(
+                KIEV.getRef(), KIEV,
+                MINSK.getRef(), MINSK,
+                MOSCOW.getRef(), MOSCOW,
+                SPB.getRef(), SPB,
+                ekb.getRef(), ekb);
+        Assert.assertEquals(COMPARE, cities);
         System.out.println(cities.values());
     }
 }

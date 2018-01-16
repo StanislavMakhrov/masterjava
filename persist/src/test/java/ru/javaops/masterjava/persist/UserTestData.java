@@ -1,14 +1,13 @@
 package ru.javaops.masterjava.persist;
 
 import com.google.common.collect.ImmutableList;
-import ru.javaops.masterjava.persist.dao.CityTestData;
 import ru.javaops.masterjava.persist.dao.UserDao;
 import ru.javaops.masterjava.persist.model.User;
 import ru.javaops.masterjava.persist.model.type.UserFlag;
 
 import java.util.List;
 
-import static ru.javaops.masterjava.persist.dao.CityTestData.*;
+import static ru.javaops.masterjava.persist.CityTestData.*;
 
 public class UserTestData {
     public static User ADMIN;
