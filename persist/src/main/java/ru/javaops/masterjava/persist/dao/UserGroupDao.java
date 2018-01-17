@@ -2,9 +2,7 @@ package ru.javaops.masterjava.persist.dao;
 
 import com.bertoncelj.jdbi.entitymapper.EntityMapperFactory;
 import one.util.streamex.StreamEx;
-import org.skife.jdbi.v2.sqlobject.Bind;
-import org.skife.jdbi.v2.sqlobject.SqlQuery;
-import org.skife.jdbi.v2.sqlobject.SqlUpdate;
+import org.skife.jdbi.v2.sqlobject.*;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapperFactory;
 import ru.javaops.masterjava.persist.model.UserGroup;
 
@@ -17,6 +15,9 @@ public abstract class UserGroupDao implements AbstractDao {
     @Override
     public abstract void clean();
 
+    @SqlBatch("INSERT INTO user_group (user_id, group_id) VALUES (:userId, :groupId)")
+    public abstract void insertBatch(@BindBean List<UserGroup> userGroups);
+
     @SqlQuery("SELECT user_id FROM user_group WHERE group_id=:it")
     public abstract Set<Integer> getUserIds(@Bind int groupId);
 
@@ -25,6 +26,6 @@ public abstract class UserGroupDao implements AbstractDao {
     }
 
     public static Set<Integer> getByGroupId(int groupId, List<UserGroup> userGroups) {
-        return StreamEx.of(userGroups).filter(ug -> ug.getGroupId() == groupId).map(UserGroup::getGroupId).toSet();
+        return StreamEx.of(userGroups).filter(ug -> ug.getGroupId() == groupId).map(UserGroup::getUserId).toSet();
     }
 }

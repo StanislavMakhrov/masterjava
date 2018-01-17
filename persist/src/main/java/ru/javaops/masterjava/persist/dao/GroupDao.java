@@ -25,7 +25,7 @@ public abstract class GroupDao implements AbstractDao {
         return StreamEx.of(getAll()).toMap(Group::getName, g -> g);
     }
 
-    @SqlUpdate("INSERT INTO group (name, type, project_id)  VALUES (:name, CAST(:type AS group_type), :projectId)")
+    @SqlUpdate("INSERT INTO groups (name, type, project_id)  VALUES (:name, CAST(:type AS group_type), :projectId)")
     @GetGeneratedKeys
     public abstract int insertGeneratedId(@BindBean Group groups);
 
