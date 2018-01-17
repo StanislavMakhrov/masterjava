@@ -10,11 +10,12 @@ import ru.javaops.masterjava.persist.model.type.UserFlag;
 import ru.javaops.masterjava.xml.schema.ObjectFactory;
 import ru.javaops.masterjava.xml.util.JaxbParser;
 import ru.javaops.masterjava.xml.util.StaxStreamProcessor;
+import ru.javaops.masterjava.upload.PayloadProcessor.FailedEmails;
+
 
 import javax.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,28 +34,16 @@ public class UserProcessor {
 
     private ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_THREADS);
 
-    @AllArgsConstructor
-    public static class FailedEmails {
-        public String emailsOrRange;
-        public String reason;
-
-        @Override
-        public String toString() {
-            return emailsOrRange + " : " + reason;
-        }
-    }
-
     /*
      * return failed users chunks
      */
-    public List<FailedEmails> process(final InputStream is, int chunkSize) throws XMLStreamException, JAXBException {
+    public List<FailedEmails> process(final StaxStreamProcessor processor, int chunkSize) throws XMLStreamException, JAXBException {
         log.info("Start processing with chunkSize=" + chunkSize);
 
         Map<String, Future<List<String>>> chunkFutures = new LinkedHashMap<>();  // ordered map (emailRange -> chunk future)
 
         int id = userDao.getSeqAndSkip(chunkSize);
         List<User> chunk = new ArrayList<>(chunkSize);
-        val processor = new StaxStreamProcessor(is);
         val unmarshaller = jaxbParser.createUnmarshaller();
 
         while (processor.doUntil(XMLEvent.START_ELEMENT, "User")) {
