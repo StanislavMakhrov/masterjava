@@ -20,8 +20,8 @@ public class MailServiceClient {
                 new Addressee("Bad Email <bad_email.ru>")), ImmutableList.of(), "Subject", "Body");
 
         mailService.sendMail(
-                ImmutableList.of(new Addressee("Test Java testjava.java@yandex.ru")),
-                ImmutableList.of(new Addressee("Stanislav Makhrov SlavaM4@yandex.ru")),"Subject", "Body"
+                ImmutableList.of(new Addressee("Test Java <testjava.java@yandex.ru>")),
+                ImmutableList.of(new Addressee("Stanislav Makhrov <SlavaM4@yandex.ru>")),"Subject", "Body"
         );
     }
 }
