@@ -19,4 +19,9 @@ public class Addressee {
     public Addressee(String email) {
         this(email, null);
     }
+
+    @Override
+    public String toString() {
+        return name == null ? email : name + " <" + email + '>';
+    }
 }
